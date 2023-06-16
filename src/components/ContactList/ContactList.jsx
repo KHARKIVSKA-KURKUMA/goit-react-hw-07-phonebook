@@ -1,11 +1,18 @@
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { List, Items, Notification, ContactWrap } from './Contact.styled';
 import ContactListItem from './ContactItem';
 import { contactSelector, filterSelector } from 'store/selectors';
+import { useEffect } from 'react';
+import { getContactsThunk } from 'store/contacts/contactsThunks';
 
 const ContactList = () => {
   const { contacts } = useSelector(contactSelector);
   const { filter } = useSelector(filterSelector);
+  const dispatch = useDispatch();
+  /* -------------------------------------------------------------------------- */
+  useEffect(() => {
+    dispatch(getContactsThunk());
+  }, [dispatch]);
   /* -------------------------- GET FILTERED CONTACTS ------------------------- */
   const getFilteredContacts = () => {
     const normalizedFilter = filter.toLowerCase();

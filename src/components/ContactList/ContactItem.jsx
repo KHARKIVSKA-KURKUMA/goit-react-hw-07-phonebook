@@ -10,7 +10,11 @@ import {
 } from './Contact.styled';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { removeContact, updateContact } from 'store/contacts/contactSlice';
+import {
+  deleteContactsThunk,
+  putContactsThunk,
+} from 'store/contacts/contactsThunks';
+import { toast } from 'react-toastify';
 
 const ContactListItem = props => {
   /* ---------------------------------- STATE --------------------------------- */
@@ -21,18 +25,31 @@ const ContactListItem = props => {
   /* ------------------------------- HANDLE EDIT ------------------------------ */
   const handleEdit = () => {
     if (isEdit) {
+      const nameRegex =
+        /^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$/;
+      if (!nameRegex.test(name) || name.length <= 2) {
+        toast.error(
+          `${name} is invalid name! Add at least 3 letters without numbers`
+        );
+        return;
+      }
+      const numberRegex =
+        /\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}/;
+      if (!numberRegex.test(number)) {
+        toast.error(`${number} is invalid number`);
+        return;
+      }
       if (name !== props.name || number !== props.number) {
         const updatedContact = {
           id: props.id,
           name,
           number,
         };
-        dispatch(updateContact(updatedContact));
+        dispatch(putContactsThunk(updatedContact));
       }
     }
     setIsEdit(prev => !prev);
   };
-
   /* --------------------------------- RENDER --------------------------------- */
   return (
     <Container>
@@ -69,7 +86,7 @@ const ContactListItem = props => {
         {!isEdit && (
           <DeleteButton
             type="button"
-            onClick={() => dispatch(removeContact(props.id))}
+            onClick={() => dispatch(deleteContactsThunk(props.id))}
           >
             Delete
           </DeleteButton>

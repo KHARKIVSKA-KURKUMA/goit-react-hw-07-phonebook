@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
 import { Input, Form, Label, Button } from './ContactForm.styled';
-import { addContact } from 'store/contacts/contactSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { contactSelector } from 'store/selectors';
 import { nanoid } from '@reduxjs/toolkit';
 import { toast } from 'react-toastify';
+import { postContactsThunk } from 'store/contacts/contactsThunks';
 
 function ContactForm() {
   const { contacts } = useSelector(contactSelector);
   const dispatch = useDispatch();
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
+  const nameRegex =
+    /^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$/;
+  const numberRegex =
+    /\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}/;
   /* ---------------------------------- CLEAN --------------------------------- */
   const cleanField = () => {
     setName('');
@@ -21,13 +25,22 @@ function ContactForm() {
     e.preventDefault();
     if (contacts.find(contact => contact.name === name)) {
       toast.error(`${name} is already in your contacts!`);
+      return;
+    } else if (!nameRegex.test(name) || name.length <= 2) {
+      toast.error(
+        `${name} is invalid name! Add at least 3 letters without numbers`
+      );
+      return;
+    } else if (!numberRegex.test(number)) {
+      toast.error(`${number} is invalid number`);
+      return;
     } else {
       const newContact = {
         id: nanoid(15),
         name,
         number,
       };
-      dispatch(addContact(newContact));
+      dispatch(postContactsThunk(newContact));
     }
     cleanField();
   };
